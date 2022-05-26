@@ -570,12 +570,27 @@ local equipmentList = {}
 local function UpdateEquipmentList()
     wipe(equipmentList)
     for slotID = 1, 18 do
+        if slotID ~= 13 and slotID ~= 14 then -- ADD
+            local itemID = GetInventoryItemID("player", slotID)
+            if itemID and IsUsableItem(itemID) then
+                tinsert(equipmentList, slotID)
+            end
+        end -- ADD
+    end
+end
+
+-- 更新饰品列表 ADD
+local trinketList = {}
+local function UpdateTrinketList()
+    wipe(trinketList)
+    for slotID = 13, 14 do
         local itemID = GetInventoryItemID("player", slotID)
         if itemID and IsUsableItem(itemID) then
-            tinsert(equipmentList, slotID)
+            tinsert(trinketList, slotID)
         end
     end
 end
+-- ADD
 
 local UpdateAfterCombat = {
     [1] = false,
@@ -971,6 +986,15 @@ function EB:UpdateBar(id)
                         buttonID = buttonID + 1
                     end
                 end
+            elseif module == "TRINK" then -- 更新饰品 ADD
+                for _, slotID in pairs(trinketList) do
+                    local itemID = GetInventoryItemID("player", slotID)
+                    if itemID and not self.db.blackList[itemID] and buttonID <= barDB.numButtons then
+                        self:SetUpButton(bar.buttons[buttonID], nil, slotID)
+                        self:UpdateButtonSize(bar.buttons[buttonID], barDB)
+                        buttonID = buttonID + 1
+                    end
+                end --ADD
             elseif module == "CUSTOM" then -- 更新自定义列表
                 AddButtons(self.db.customList)
             end
@@ -1118,6 +1142,7 @@ do
         lastUpdateTime = now
         UpdateQuestItemList()
         UpdateEquipmentList()
+        UpdateTrinketList() --ADD
 
         self:UpdateBars()
     end
@@ -1140,6 +1165,7 @@ do
             1,
             function()
                 UpdateEquipmentList()
+                UpdateTrinketList() --ADD
                 self:UpdateBars()
                 InUpdating = false
             end
@@ -1188,6 +1214,7 @@ function EB:Initialize()
     self:CreateAll()
     UpdateQuestItemList()
     UpdateEquipmentList()
+    UpdateTrinketList() --ADD
     self:UpdateBars()
     self:UpdateBinding()
 
@@ -1211,6 +1238,7 @@ function EB:ProfileUpdate()
     if self.db.enable then
         UpdateQuestItemList()
         UpdateEquipmentList()
+        UpdateTrinketList() --ADD
     elseif self.initialized then
         self:UnregisterEvent("UNIT_INVENTORY_CHANGED")
         self:UnregisterEvent("BAG_UPDATE_DELAYED")

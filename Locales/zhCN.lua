@@ -401,6 +401,7 @@ L["Enter Color"] = "进入颜色"
 L["Enter Combat"] = "进入战斗"
 L["Enter Text"] = "文本(进入)"
 L["Equipments"] = "装备"
+L["Trinkets"] = "饰品" --ADD
 L["Error Mesage"] = "错误信息"
 L["Europe"] = "欧洲"
 L["Event Trace"] = "事件追踪"

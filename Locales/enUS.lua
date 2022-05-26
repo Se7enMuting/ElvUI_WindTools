@@ -401,6 +401,7 @@ L["Enter Color"] = true
 L["Enter Combat"] = true
 L["Enter Text"] = true
 L["Equipments"] = true
+L["Trinkets"] = true --ADD
 L["Error Mesage"] = true
 L["Europe"] = true
 L["Event Trace"] = true
