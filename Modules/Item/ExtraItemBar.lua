@@ -24,15 +24,13 @@ local GetInventoryItemCooldown = GetInventoryItemCooldown
 local GetInventoryItemID = GetInventoryItemID
 local GetItemCooldown = GetItemCooldown
 local GetItemCount = GetItemCount
-local GetItemIcon = GetItemIcon
-local GetItemInfo = GetItemInfo
-local GetItemQualityColor = GetItemQualityColor
 local GetQuestLogSpecialItemCooldown = GetQuestLogSpecialItemCooldown
 local GetQuestLogSpecialItemInfo = GetQuestLogSpecialItemInfo
 local GetTime = GetTime
 local InCombatLockdown = InCombatLockdown
 local IsItemInRange = IsItemInRange
 local IsUsableItem = IsUsableItem
+local Item = Item
 local RegisterStateDriver = RegisterStateDriver
 local UnregisterStateDriver = UnregisterStateDriver
 
@@ -570,16 +568,16 @@ local equipmentList = {}
 local function UpdateEquipmentList()
     wipe(equipmentList)
     for slotID = 1, 18 do
-        if slotID ~= 13 and slotID ~= 14 then -- ADD
+        if slotID ~= 13 and slotID ~= 14 then
             local itemID = GetInventoryItemID("player", slotID)
             if itemID and IsUsableItem(itemID) then
                 tinsert(equipmentList, slotID)
             end
-        end -- ADD
+        end
     end
 end
 
--- 更新饰品列表 ADD
+-- 更新饰品列表
 local trinketList = {}
 local function UpdateTrinketList()
     wipe(trinketList)
@@ -590,7 +588,6 @@ local function UpdateTrinketList()
         end
     end
 end
--- ADD
 
 local UpdateAfterCombat = {
     [1] = false,
@@ -663,24 +660,34 @@ function EB:SetUpButton(button, questItemData, slotID)
 
     if questItemData then
         button.itemID = questItemData.itemID
-        button.itemName = GetItemInfo(questItemData.itemID)
         button.countText = GetItemCount(questItemData.itemID, nil, true)
-        button.tex:SetTexture(GetItemIcon(questItemData.itemID))
         button.questLogIndex = questItemData.questLogIndex
-
         button:SetBackdropBorderColor(0, 0, 0)
+
+        local item = Item:CreateFromItemID(questItemData.itemID)
+        item:ContinueOnItemLoad(
+            function()
+                button.itemName = item:GetItemName()
+                button.tex:SetTexture(item:GetItemIcon())
+            end
+        )
     elseif slotID then
-        local itemID = GetInventoryItemID("player", slotID)
-        local name, _, rarity = GetItemInfo(itemID)
-
         button.slotID = slotID
-        button.itemName = GetItemInfo(itemID)
-        button.tex:SetTexture(GetItemIcon(itemID))
+        local item = Item:CreateFromEquipmentSlot(slotID)
+        item:ContinueOnItemLoad(
+            function()
+                if button.slotID == slotID then
+                    button.itemName = item:GetItemName()
+                    button.tex:SetTexture(item:GetItemIcon())
 
-        if rarity and rarity > 1 then
-            local r, g, b = GetItemQualityColor(rarity)
-            button:SetBackdropBorderColor(r, g, b)
-        end
+                    local color = item:GetItemQualityColor()
+
+                    if color then
+                        button:SetBackdropBorderColor(color.r, color.g, color.b)
+                    end
+                end
+            end
+        )
     end
 
     -- 更新堆叠数
@@ -986,7 +993,7 @@ function EB:UpdateBar(id)
                         buttonID = buttonID + 1
                     end
                 end
-            elseif module == "TRINK" then -- 更新饰品 ADD
+            elseif module == "TRINK" then -- 更新饰品
                 for _, slotID in pairs(trinketList) do
                     local itemID = GetInventoryItemID("player", slotID)
                     if itemID and not self.db.blackList[itemID] and buttonID <= barDB.numButtons then
@@ -994,7 +1001,7 @@ function EB:UpdateBar(id)
                         self:UpdateButtonSize(bar.buttons[buttonID], barDB)
                         buttonID = buttonID + 1
                     end
-                end --ADD
+                end
             elseif module == "CUSTOM" then -- 更新自定义列表
                 AddButtons(self.db.customList)
             end
@@ -1142,7 +1149,7 @@ do
         lastUpdateTime = now
         UpdateQuestItemList()
         UpdateEquipmentList()
-        UpdateTrinketList() --ADD
+        UpdateTrinketList()
 
         self:UpdateBars()
     end
@@ -1165,7 +1172,7 @@ do
             1,
             function()
                 UpdateEquipmentList()
-                UpdateTrinketList() --ADD
+                UpdateTrinketList()
                 self:UpdateBars()
                 InUpdating = false
             end
@@ -1214,7 +1221,7 @@ function EB:Initialize()
     self:CreateAll()
     UpdateQuestItemList()
     UpdateEquipmentList()
-    UpdateTrinketList() --ADD
+    UpdateTrinketList()
     self:UpdateBars()
     self:UpdateBinding()
 
@@ -1238,7 +1245,7 @@ function EB:ProfileUpdate()
     if self.db.enable then
         UpdateQuestItemList()
         UpdateEquipmentList()
-        UpdateTrinketList() --ADD
+        UpdateTrinketList()
     elseif self.initialized then
         self:UnregisterEvent("UNIT_INVENTORY_CHANGED")
         self:UnregisterEvent("BAG_UPDATE_DELAYED")

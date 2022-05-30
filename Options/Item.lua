@@ -507,7 +507,7 @@ do -- Add options for bars
                         L["You can separate the groups with a comma."],
                         FormatDesc("QUEST", L["Quest Items"]),
                         FormatDesc("EQUIP", L["Equipments"]),
-                        FormatDesc("TRINK", L["Trinkets"]), --ADD
+                        FormatDesc("TRINK", L["Trinkets"]),
                         FormatDesc("POTION", L["Potions"]),
                         FormatDesc("POTIONSL", format("%s (%s)", L["Potions"], L["Shadowlands"])),
                         FormatDesc("FLASK", L["Flasks"]),
